@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="icon/favicon.ico">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+    <title>招商银行2022年Fintech训练营</title>
+</head>
+<body>
+	<div class="maske"></div>
+	<h2 class="header">招商银行2022年Fintech训练营</h2>
+	<div class="captcha">
+		<p class="title">切换交互方式</p>
+		<div class="label">
+		  <input type="radio" value="puzzle" name="handlergroup" id="puzzle" checked="checked" /><label for="puzzle" class="mr48">拼图验证</label>
+		  <input type="radio" value="point" name="handlergroup" id="point" /><label for="point">图点击验证</label>
+		</div>
+		<div id="can"></div>
+	</div>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/captcha.js"></script>
+	<script src="js/plugin/puzzle.js"></script>
+	<script src="js/plugin/point-click.js"></script>
+	<script type="application/javascript">
+		var conf = {'content':'can'};
+
+		var callback = function(data,postStatus){
+			$.ajax({
+				url : "/verifyCode",
+				type : "POST",
+				dataType: 'text',
+				contentType:'application/json;charset=UTF-8',
+				data:data,
+				success : function(result) {
+					if(result=="false") {
+						postStatus(false,function(){
+							init();
+						});
+
+					}
+
+					else{
+						postStatus(true,function(){
+							alert("success");
+							init();
+						});
+					}
+				},
+				error: function(XMLHttpRequest, textStatus, errorThrown){
+					//查看错误信息
+					if(XMLHttpRequest.status==301)
+					{
+						alert("请稍等一会重试");
+						init();
+					}
+					else if(XMLHttpRequest.status==302)
+					{
+						alert("使用人数太多");
+						init();
+					}
+
+				}
+			});
+		}
+
+		var init = function(){
+			$.ajax({
+				url : "/captcha?handler="+$('input:radio:checked').val(),
+				success : function(result) {
+					var fastCaptcha = captcha();
+					fastCaptcha.plugin(puzzle());
+					fastCaptcha.plugin(point());
+					fastCaptcha.captcha(conf).build(result,callback);
+				}
+			});
+		}
+
+		$(function(){
+			init();
+		});
+
+		$('input:radio').change(function(){
+			init();
+		});
+	</script>
+</body>
+</html>
